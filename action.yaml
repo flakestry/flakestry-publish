@@ -31,7 +31,7 @@ runs:
 
         RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=${{ inputs.url }}")
         OIDC=$(echo $RESPONSE | jq -r '.value')
-        README=$(find . -iname "README*" -print -quit)
+        README=$(find . -iname "README*" -maxdepth 1 -print -quit)
 
         nix run nixpkgs#jo metadata="$metadata" metadata_error="$metadata_errors" outputs="$outputs" outputs_errors="$outputs_errors" readme="$README" version="${{ inputs.version }}"> publish.json
 
