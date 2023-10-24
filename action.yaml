@@ -21,22 +21,25 @@ runs:
     - uses: cachix/install-nix-action@v22
     - shell: bash
       run: |
+        echo null > metadata.err
+        echo null > outputs.err
         nix flake metadata --json > metadata.json 2> metadata.err || true
-        nix flake show --json > flake.json 2> flake.err || true
+        nix flake show --json > outputs.json 2> outputs.err || true
 
-        metadata=$(cat metadata.json || echo null)
-        metadata_errors=$(cat metadata.err || echo null)
-        outputs=$(cat flake.json || echo null)
-        outputs_errors=$(cat flake.err || echo null)
+        if [ ! -e metadata.json ]; then
+            echo null > metadata.json
+        fi
+        if [ ! -e outputs.json ]; then
+            echo null > outputs.json
+        fi
 
         RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=${{ inputs.url }}")
         OIDC=$(echo $RESPONSE | jq -r '.value')
         README=$(find . -iname "README*" -maxdepth 1 -print -quit)
 
-        nix run nixpkgs#jo metadata="$metadata" metadata_error="$metadata_errors" outputs="$outputs" outputs_errors="$outputs_errors" readme="$README" version="${{ inputs.version }}"> publish.json
+        nix run nixpkgs#jo metadata=:metadata.json metadata_error=@metadata.err outputs=:outputs.json outputs_errors=@outputs.err readme="$README" version="${{ inputs.version }}"> publish.json
 
         echo "Publishing to ${{ inputs.url }}"
-        cat publish.json
 
         curl --fail-with-body -X POST -H 'Content-Type: application/json' \
              -H "Github-Token: ${{ github.token }}" \
