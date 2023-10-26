@@ -22,9 +22,10 @@ runs:
     - shell: bash
       run: |
         echo null > metadata.err
-        echo null > outputs.err
-        nix flake metadata --json > metadata.json 2> metadata.err || true
-        nix flake show --json --all-systems > outputs.json 2> outputs.err || true
+        echo null > metadata.json
+        echo null > outputs.json
+        nix flake metadata --json > metadata.json 2> metadata.err || echo "nix flake metadata --json failed"
+        nix flake show --json --all-systems > outputs.json 2> outputs.err || echo "nix flake show --json --all-systems failed"
 
         if [ ! -e metadata.json ]; then
             echo null > metadata.json
