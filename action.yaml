@@ -24,7 +24,7 @@ runs:
         echo null > metadata.err
         echo null > outputs.err
         nix flake metadata --json > metadata.json 2> metadata.err || true
-        nix flake show --json > outputs.json 2> outputs.err || true
+        nix flake show --json --all-systems > outputs.json 2> outputs.err || true
 
         if [ ! -e metadata.json ]; then
             echo null > metadata.json
