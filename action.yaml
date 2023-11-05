@@ -3,11 +3,17 @@ description: 'Release flake to flakestry.dev'
 inputs:
   version:
     description: 'Version of the flake to be released'
-    required: true
-  url:  
+    required: false
+  ref:
+    description: 'Git reference to be released'
+    required: false
+  url:
     description: 'Flakestry URL'
     required: true
     default: 'https://flakestry.dev'
+  ignoreConflicts:
+    description: "Don't fail if the version already exists"
+    required: false
   # allowEvalErrors:
   #   description: 'Allow eval errors'
   #   required: false
@@ -38,12 +44,22 @@ runs:
         OIDC=$(echo $RESPONSE | jq -r '.value')
         README=$(find . -iname "README*" -maxdepth 1 -print -quit)
 
-        nix run nixpkgs#jo metadata=:metadata.json metadata_error=@metadata.err outputs=:outputs.json outputs_errors=@outputs.err readme="$README" version="${{ inputs.version }}"> publish.json
+        nix run nixpkgs#jo \
+          metadata=:metadata.json \
+          metadata_error=@metadata.err \
+          outputs=:outputs.json \
+          outputs_errors=@outputs.err \
+          readme="$README" \
+          version="${{ inputs.version || null }}" \
+          ref="${{ inputs.ref || github.sha }}" \
+        > publish.json
 
         echo "Publishing to ${{ inputs.url }}"
 
-        curl --fail-with-body -X POST -H 'Content-Type: application/json' \
+        curl --fail-with-body -w '%{http_code}' -o /dev/stderr > http_code \
+             -H 'Content-Type: application/json' \
              -H "Github-Token: ${{ github.token }}" \
              -H "Authorization: Bearer $OIDC" \
              -d @publish.json \
-             ${{ inputs.url }}/api/publish
+             -X POST ${{ inputs.url }}/api/publish \
+        || ([ "${{ inputs.ignoreConflicts || "false" }}" = 'true' ] && grep -qxF 409 http_code)
