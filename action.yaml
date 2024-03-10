@@ -62,4 +62,4 @@ runs:
              -H "Authorization: Bearer $OIDC" \
              -d @publish.json \
              -X POST ${{ inputs.url }}/api/publish \
-        || ([ "${{ inputs.ignoreConflicts || "false" }}" = 'true' ] && grep -qxF 409 http_code)
+        || ([ "${{ inputs.ignoreConflicts || false }}" = 'true' ] && grep -qxF 409 http_code)
