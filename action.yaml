@@ -21,10 +21,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.version }}
-    - uses: cachix/install-nix-action@v22
+        ref: ${{ inputs.ref || github.sha }}
+    - uses: cachix/install-nix-action@v27
     - shell: bash
       run: |
         echo null > metadata.err
