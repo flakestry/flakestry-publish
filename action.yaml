@@ -46,7 +46,7 @@ runs:
 
         nix run nixpkgs#jo \
           metadata=:metadata.json \
-          metadata_error=@metadata.err \
+          metadata_errors=@metadata.err \
           outputs=:outputs.json \
           outputs_errors=@outputs.err \
           readme="$README" \
